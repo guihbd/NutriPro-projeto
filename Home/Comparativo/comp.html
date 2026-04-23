@@ -5,75 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparativo</title>
     <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #dbe3ec;
+      --primary: #0ea5e9;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; padding: 2rem; background: #f9f9f8; color: #111; }
 
-    /* ── Layout ── */
-    #comparador { max-width: 860px; margin: 0 auto; }
-    .cmp-header { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #999; margin-bottom: 1rem; }
-    .slots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: start; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(180deg, #e0f2fe 0%, var(--bg) 260px);
+      color: var(--text);
+      padding: 0 1rem 2rem;
+    }
 
-    /* ── Slot card ── */
-    .slot-card { background: #fff; border: 1px solid #e8e8e6; border-radius: 12px; padding: 14px; position: relative; animation: fadeIn .18s ease; }
-    .slot-label { font-size: 10px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
-    .slot-remove { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #ccc; font-size: 16px; line-height: 1; padding: 0 4px; border-radius: 4px; }
-    .slot-remove:hover { color: #555; background: #f3f3f1; }
+    header {
+      text-align: center;
+      padding: 20px 0 10px;
+    }
 
-    /* ── Input ── */
+    #comparador { max-width: 900px; margin: 1rem auto 0; }
+    .cmp-header {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: inline-block;
+    }
+    .slots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; align-items: start; }
+
+    .slot-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      position: relative;
+      animation: fadeIn .18s ease;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+    }
+    .slot-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+    .slot-remove { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 16px; line-height: 1; padding: 0 4px; border-radius: 4px; }
+    .slot-remove:hover { color: #334155; background: #f1f5f9; }
+
     .input-wrap { position: relative; }
-    .slot-input { width: 100%; font-size: 13px; padding: 7px 28px 7px 10px; border: 1px solid #e2e2e0; border-radius: 8px; background: #fafaf9; color: #111; outline: none; transition: border-color .2s; }
-    .slot-input:focus { border-color: #aaa; box-shadow: 0 0 0 3px rgba(0,0,0,.05); }
-    .slot-input::placeholder { color: #ccc; }
-    .input-clear { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #ccc; font-size: 14px; line-height: 1; padding: 2px 4px; display: none; }
-    .input-clear:hover { color: #555; }
+    .slot-input { width: 100%; font-size: 13px; padding: 8px 28px 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; color: var(--text); outline: none; transition: border-color .2s; }
+    .slot-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(14, 165, 233, .2); }
+    .slot-input::placeholder { color: #94a3b8; }
+    .input-clear { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 14px; line-height: 1; padding: 2px 4px; display: none; }
+    .input-clear:hover { color: #334155; }
 
-    /* ── Dropdown ── */
-    .dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #e2e2e0; border-radius: 10px; z-index: 100; max-height: 220px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,.06); display: none; }
-    .dd-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f3f3f1; font-size: 13px; }
+    .dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--surface); border: 1px solid #cbd5e1; border-radius: 10px; z-index: 100; max-height: 220px; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,.09); display: none; }
+    .dd-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
     .dd-item:last-child { border-bottom: none; }
-    .dd-item:hover { background: #fafaf9; }
-    .dd-thumb { width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background: #f3f3f1; flex-shrink: 0; }
-    .dd-thumb-placeholder { width: 32px; height: 32px; border-radius: 4px; background: #f3f3f1; flex-shrink: 0; }
-    .dd-name { font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .dd-brand { font-size: 11px; color: #aaa; }
-    .dd-msg { padding: 10px; font-size: 13px; color: #aaa; text-align: center; }
+    .dd-item:hover { background: #f8fafc; }
+    .dd-thumb { width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background: #f1f5f9; flex-shrink: 0; }
+    .dd-thumb-placeholder { width: 32px; height: 32px; border-radius: 4px; background: #f1f5f9; flex-shrink: 0; }
+    .dd-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dd-brand { font-size: 11px; color: var(--muted); }
+    .dd-msg { padding: 10px; font-size: 13px; color: var(--muted); text-align: center; }
 
-    /* ── Selected chip ── */
-    .selected-chip { display: flex; align-items: center; gap: 8px; background: #f5f5f3; border-radius: 8px; padding: 6px 8px; margin-top: 8px; }
+    .selected-chip { display: flex; align-items: center; gap: 8px; background: #f8fafc; border-radius: 8px; padding: 6px 8px; margin-top: 8px; border: 1px solid var(--border); }
     .chip-img { width: 24px; height: 24px; object-fit: contain; border-radius: 3px; }
-    .chip-name { flex: 1; font-size: 12px; font-weight: 500; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chip-clear { background: none; border: none; cursor: pointer; color: #bbb; font-size: 14px; padding: 0 2px; line-height: 1; }
-    .chip-clear:hover { color: #555; }
+    .chip-name { flex: 1; font-size: 12px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chip-clear { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 14px; padding: 0 2px; line-height: 1; }
+    .chip-clear:hover { color: #334155; }
 
-    /* ── Nutri mini grid ── */
     .nutri-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; }
-    .nutri-cell { background: #f5f5f3; border-radius: 8px; padding: 5px 8px; }
-    .nutri-val { font-size: 13px; font-weight: 600; color: #222; }
-    .nutri-lbl { font-size: 10px; color: #aaa; }
+    .nutri-cell { background: #f8fafc; border-radius: 8px; padding: 5px 8px; border: 1px solid var(--border); }
+    .nutri-val { font-size: 13px; font-weight: 700; color: #1e293b; }
+    .nutri-lbl { font-size: 10px; color: var(--muted); }
 
-    /* ── Add button ── */
-    .add-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: 1px dashed #d8d8d5; border-radius: 12px; padding: 14px; cursor: pointer; color: #aaa; font-size: 13px; font-weight: 500; min-height: 80px; width: 100%; transition: background .15s, border-color .15s, color .15s; }
-    .add-btn:hover { background: #fafaf9; border-color: #aaa; color: #555; }
+    .add-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600; min-height: 80px; width: 100%; transition: background .15s, border-color .15s, color .15s; }
+    .add-btn:hover { background: #f8fafc; border-color: var(--primary); color: #0f172a; }
 
-    /* ── Footer ── */
     .cmp-footer { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
-    .counter { font-size: 12px; color: #bbb; }
-    .compare-btn { font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 8px; border: 1px solid #e2e2e0; background: #fff; color: #222; cursor: pointer; transition: background .15s; }
-    .compare-btn:hover { background: #f5f5f3; }
+    .counter { font-size: 12px; color: var(--muted); }
+    .compare-btn { font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: var(--surface); color: #1e293b; cursor: pointer; transition: background .15s; }
+    .compare-btn:hover { background: #f8fafc; }
     .compare-btn:disabled { opacity: .4; cursor: not-allowed; }
 
     @keyframes fadeIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
-
-    header {
-    text-align: center;
-    padding-top: 12px;
-        }
-         body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-        }
-
-    </style>
+</style>
 </head>
 <body>
     <header>
