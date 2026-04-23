@@ -7,24 +7,40 @@
     <style>
         :root {
             color-scheme: light;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --muted: #475569;
+            --border: #dbe3ec;
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
             font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f8;
-            color: #1f2937;
+            background: linear-gradient(180deg, #e0f2fe 0%, var(--bg) 260px);
+            color: var(--text);
         }
 
         header {
             text-align: center;
-            padding: 12px 20px 0;
+            padding: 24px 20px 0;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: clamp(1.9rem, 3vw, 2.5rem);
         }
 
         main {
-            max-width: 900px;
-            margin: 24px auto;
-            padding: 0 16px 32px;
+            max-width: 960px;
+            margin: 18px auto;
+            padding: 0 16px 40px;
         }
 
         .toolbar {
@@ -34,23 +50,35 @@
             gap: 12px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .toolbar p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.4;
         }
 
         .btn {
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 10px 14px;
             font-size: 14px;
             cursor: pointer;
-            transition: filter 0.2s;
+            transition: transform 0.15s, filter 0.2s;
         }
 
         .btn:hover {
             filter: brightness(0.95);
+            transform: translateY(-1px);
         }
 
         .btn-primary {
-            background: #0ea5e9;
+            background: var(--primary);
             color: white;
             font-weight: 700;
         }
@@ -65,14 +93,15 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 16px;
+            align-items: start;
         }
 
         .lista-card {
-            background: white;
+            background: var(--surface);
             border-radius: 12px;
             padding: 16px;
-            box-shadow: 0 4px 20px rgba(31, 41, 55, 0.07);
-            border: 1px solid #e5e7eb;
+            box-shadow: 0 6px 22px rgba(31, 41, 55, 0.08);
+            border: 1px solid var(--border);
         }
 
         .lista-header {
@@ -102,7 +131,13 @@
 
         .empty {
             font-style: italic;
-            color: #6b7280;
+            color: #64748b;
+            padding: 20px;
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+            background: #f8fafc;
+            text-align: center;
+            grid-column: 1 / -1;
         }
 
         .item-form {
@@ -116,9 +151,14 @@
             min-width: 0;
             padding: 8px;
             border-radius: 8px;
-            border: 1px solid #d1d5db;
+            border: 1px solid #cbd5e1;
         }
-    </style>
+
+        .item-input:focus-visible {
+            outline: 3px solid rgba(14, 165, 233, 0.28);
+            border-color: var(--primary-dark);
+        }
+</style>
 </head>
 <body>
     <header>
