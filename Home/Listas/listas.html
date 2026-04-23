@@ -1,18 +1,122 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listas</title>
     <style>
+        :root {
+            color-scheme: light;
+        }
+
         body {
             margin: 0;
             font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
         }
 
         header {
             text-align: center;
-            padding-top: 12px;
+            padding: 12px 20px 0;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 24px auto;
+            padding: 0 16px 32px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        .btn:hover {
+            filter: brightness(0.95);
+        }
+
+        .btn-primary {
+            background: #0ea5e9;
+            color: white;
+            font-weight: 700;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+            font-weight: 600;
+        }
+
+        #listasContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .lista-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 20px rgba(31, 41, 55, 0.07);
+            border: 1px solid #e5e7eb;
+        }
+
+        .lista-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .lista-title {
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .lista-items {
+            margin: 0;
+            padding-left: 18px;
+            min-height: 24px;
+        }
+
+        .lista-items li {
+            margin-bottom: 6px;
+        }
+
+        .empty {
+            font-style: italic;
+            color: #6b7280;
+        }
+
+        .item-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .item-input {
+            flex: 1;
+            min-width: 0;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
         }
     </style>
 </head>
@@ -21,6 +125,111 @@
         <h1>NutriPro</h1>
         <hr>
     </header>
-    
+
+    <main>
+        <section class="toolbar">
+            <p>Crie e organize múltiplas listas de forma rápida.</p>
+            <button id="criarListaBtn" class="btn btn-primary" type="button">+ Criar nova lista</button>
+        </section>
+
+        <section id="listasContainer" aria-live="polite"></section>
+    </main>
+
+    <script>
+        const listasContainer = document.getElementById('listasContainer');
+        const criarListaBtn = document.getElementById('criarListaBtn');
+
+        function mostrarMensagemVazia() {
+            if (listasContainer.children.length === 0) {
+                listasContainer.innerHTML = '<p class="empty">Nenhuma lista criada ainda.</p>';
+            }
+        }
+
+        function limparMensagemVazia() {
+            const emptyText = listasContainer.querySelector('.empty');
+            if (emptyText) {
+                emptyText.remove();
+            }
+        }
+
+        function adicionarItem(ul, input) {
+            const texto = input.value.trim();
+
+            if (!texto) {
+                return;
+            }
+
+            const item = document.createElement('li');
+            item.textContent = texto;
+            ul.appendChild(item);
+            input.value = '';
+        }
+
+        function criarLista() {
+            const nomeLista = prompt('Digite o nome da nova lista:');
+
+            if (!nomeLista || !nomeLista.trim()) {
+                return;
+            }
+
+            limparMensagemVazia();
+
+            const card = document.createElement('article');
+            card.className = 'lista-card';
+
+            const header = document.createElement('div');
+            header.className = 'lista-header';
+
+            const titulo = document.createElement('h2');
+            titulo.className = 'lista-title';
+            titulo.textContent = nomeLista.trim();
+
+            const removerBtn = document.createElement('button');
+            removerBtn.type = 'button';
+            removerBtn.className = 'btn btn-secondary';
+            removerBtn.textContent = 'Remover';
+            removerBtn.addEventListener('click', () => {
+                card.remove();
+                mostrarMensagemVazia();
+            });
+
+            header.appendChild(titulo);
+            header.appendChild(removerBtn);
+
+            const ul = document.createElement('ul');
+            ul.className = 'lista-items';
+
+            const form = document.createElement('form');
+            form.className = 'item-form';
+
+            const input = document.createElement('input');
+            input.className = 'item-input';
+            input.type = 'text';
+            input.placeholder = 'Adicionar item';
+            input.setAttribute('aria-label', `Adicionar item para ${nomeLista.trim()}`);
+
+            const addBtn = document.createElement('button');
+            addBtn.type = 'submit';
+            addBtn.className = 'btn btn-primary';
+            addBtn.textContent = 'Adicionar';
+
+            form.appendChild(input);
+            form.appendChild(addBtn);
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                adicionarItem(ul, input);
+            });
+
+            card.appendChild(header);
+            card.appendChild(ul);
+            card.appendChild(form);
+
+            listasContainer.appendChild(card);
+        }
+
+        criarListaBtn.addEventListener('click', criarLista);
+        mostrarMensagemVazia();
+    </script>
 </body>
 </html>
