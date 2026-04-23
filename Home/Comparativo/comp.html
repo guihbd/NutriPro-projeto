@@ -5,38 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparativo</title>
     <style>
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; padding: 2rem; background: #f9f9f8; color: #111; }
+
+    /* ── Layout ── */
+    #comparador { max-width: 860px; margin: 0 auto; }
+    .cmp-header { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #999; margin-bottom: 1rem; }
+    .slots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: start; }
+
+    /* ── Slot card ── */
+    .slot-card { background: #fff; border: 1px solid #e8e8e6; border-radius: 12px; padding: 14px; position: relative; animation: fadeIn .18s ease; }
+    .slot-label { font-size: 10px; font-weight: 600; color: #bbb; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+    .slot-remove { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: #ccc; font-size: 16px; line-height: 1; padding: 0 4px; border-radius: 4px; }
+    .slot-remove:hover { color: #555; background: #f3f3f1; }
+
+    /* ── Input ── */
+    .input-wrap { position: relative; }
+    .slot-input { width: 100%; font-size: 13px; padding: 7px 28px 7px 10px; border: 1px solid #e2e2e0; border-radius: 8px; background: #fafaf9; color: #111; outline: none; transition: border-color .2s; }
+    .slot-input:focus { border-color: #aaa; box-shadow: 0 0 0 3px rgba(0,0,0,.05); }
+    .slot-input::placeholder { color: #ccc; }
+    .input-clear { position: absolute; right: 7px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #ccc; font-size: 14px; line-height: 1; padding: 2px 4px; display: none; }
+    .input-clear:hover { color: #555; }
+
+    /* ── Dropdown ── */
+    .dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #fff; border: 1px solid #e2e2e0; border-radius: 10px; z-index: 100; max-height: 220px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,.06); display: none; }
+    .dd-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f3f3f1; font-size: 13px; }
+    .dd-item:last-child { border-bottom: none; }
+    .dd-item:hover { background: #fafaf9; }
+    .dd-thumb { width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background: #f3f3f1; flex-shrink: 0; }
+    .dd-thumb-placeholder { width: 32px; height: 32px; border-radius: 4px; background: #f3f3f1; flex-shrink: 0; }
+    .dd-name { font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dd-brand { font-size: 11px; color: #aaa; }
+    .dd-msg { padding: 10px; font-size: 13px; color: #aaa; text-align: center; }
+
+    /* ── Selected chip ── */
+    .selected-chip { display: flex; align-items: center; gap: 8px; background: #f5f5f3; border-radius: 8px; padding: 6px 8px; margin-top: 8px; }
+    .chip-img { width: 24px; height: 24px; object-fit: contain; border-radius: 3px; }
+    .chip-name { flex: 1; font-size: 12px; font-weight: 500; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chip-clear { background: none; border: none; cursor: pointer; color: #bbb; font-size: 14px; padding: 0 2px; line-height: 1; }
+    .chip-clear:hover { color: #555; }
+
+    /* ── Nutri mini grid ── */
+    .nutri-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; }
+    .nutri-cell { background: #f5f5f3; border-radius: 8px; padding: 5px 8px; }
+    .nutri-val { font-size: 13px; font-weight: 600; color: #222; }
+    .nutri-lbl { font-size: 10px; color: #aaa; }
+
+    /* ── Add button ── */
+    .add-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: 1px dashed #d8d8d5; border-radius: 12px; padding: 14px; cursor: pointer; color: #aaa; font-size: 13px; font-weight: 500; min-height: 80px; width: 100%; transition: background .15s, border-color .15s, color .15s; }
+    .add-btn:hover { background: #fafaf9; border-color: #aaa; color: #555; }
+
+    /* ── Footer ── */
+    .cmp-footer { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .counter { font-size: 12px; color: #bbb; }
+    .compare-btn { font-size: 13px; font-weight: 500; padding: 8px 18px; border-radius: 8px; border: 1px solid #e2e2e0; background: #fff; color: #222; cursor: pointer; transition: background .15s; }
+    .compare-btn:hover { background: #f5f5f3; }
+    .compare-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+
+    header {
+    text-align: center;
+    padding-top: 12px;
+        }
+         body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
         }
 
-        header {
-            text-align: center;
-            padding-top: 12px;
-        }
-
-        .comparador-container {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            gap: 24px;
-            margin-top: 20px;
-            padding: 0 16px;
-            flex-wrap: wrap;
-        }
-
-        .busca-alimento {
-            display: flex;
-            flex-direction: column;
-            min-width: 260px;
-        }
-
-        .busca-alimento input {
-            margin-top: 6px;
-            padding: 8px 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
     </style>
 </head>
 <body>
@@ -46,17 +82,228 @@
     </header>
 
     <main class="comparador-container">
-        <div class="busca-alimento">
-            <label for="alimento1">Produto 1:</label>
-            <input list="lista-alimentos" id="alimento1" name="alimento1" placeholder="Digite o nome ou marca...">
-        </div>
+        <div id="comparador">
+    <p class="cmp-header">Comparar produtos</p>
+    <div class="slots-grid" id="slots-grid"></div>
+    <div class="cmp-footer">
+      <span class="counter" id="counter"></span>
+      <button class="compare-btn" id="compare-btn" disabled>Comparar nutrição →</button>
+    </div>
+  </div>
 
-        <div class="busca-alimento">
-            <label for="alimento2">Produto 2:</label>
-            <input list="lista-alimentos" id="alimento2" name="alimento2" placeholder="Digite o nome ou marca...">
-        </div>
+
 
         <datalist id="lista-alimentos"></datalist>
     </main>
+
+    <script>
+  (function () {
+    const MAX = 4;
+    const OFF_URL = "https://world.openfoodfacts.org/cgi/search.pl";
+    let slots = [{ id: 1, value: "", product: null, primary: true }];
+    let timers = {};
+
+    // ── API ────────────────────────────────────────────────
+    async function searchOFF(query) {
+      const params = new URLSearchParams({
+        search_terms: query,
+        search_simple: "1",
+        action: "process",
+        json: "1",
+        page_size: "6",
+        fields: "id,product_name,brands,image_small_url,nutriments",
+      });
+      const res = await fetch(`${OFF_URL}?${params}`);
+      const data = await res.json();
+      return data.products ?? [];
+    }
+
+    function getNutri(p) {
+      const n = p.nutriments ?? {};
+      const fmt = (v, u = "g") => v != null ? `${Math.round(v)}${u}` : "—";
+      return {
+        kcal:    fmt(n["energy-kcal_100g"], "kcal"),
+        sugar:   fmt(n.sugars_100g),
+        fat:     fmt(n.fat_100g),
+        protein: fmt(n.proteins_100g),
+      };
+    }
+
+    // ── Render helpers ─────────────────────────────────────
+    function renderChip(slot) {
+      const p = slot.product;
+      const img = p.image_small_url
+        ? `<img class="chip-img" src="${p.image_small_url}" alt="" />`
+        : "";
+      return `<div class="selected-chip">
+        ${img}
+        <span class="chip-name">${escHtml(p.product_name.substring(0, 32))}</span>
+        <button class="chip-clear" data-clear="${slot.id}" aria-label="Limpar">×</button>
+      </div>`;
+    }
+
+    function renderNutri(p) {
+      const n = getNutri(p);
+      return `<div class="nutri-mini">
+        <div class="nutri-cell"><div class="nutri-val">${n.kcal}</div><div class="nutri-lbl">Energia /100g</div></div>
+        <div class="nutri-cell"><div class="nutri-val">${n.sugar}</div><div class="nutri-lbl">Açúcares</div></div>
+        <div class="nutri-cell"><div class="nutri-val">${n.fat}</div><div class="nutri-lbl">Gorduras</div></div>
+        <div class="nutri-cell"><div class="nutri-val">${n.protein}</div><div class="nutri-lbl">Proteínas</div></div>
+      </div>`;
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    // ── Main render ────────────────────────────────────────
+    function render() {
+      const grid = document.getElementById("slots-grid");
+      grid.innerHTML = "";
+
+      slots.forEach((slot, idx) => {
+        const labelText = slot.primary ? "★ Produto principal" : `Produto ${idx + 1}`;
+        const card = document.createElement("div");
+        card.className = "slot-card";
+        card.dataset.slotId = slot.id;
+        card.innerHTML = `
+          <p class="slot-label">${labelText}</p>
+          ${!slot.primary ? `<button class="slot-remove" data-remove="${slot.id}" aria-label="Remover slot">×</button>` : ""}
+          <div class="input-wrap">
+            <input class="slot-input" type="text" placeholder="Digite para buscar..." autocomplete="off"
+              value="${escHtml(slot.value)}" data-slot="${slot.id}" aria-label="Buscar ${labelText}" />
+            <button class="input-clear" data-input-clear="${slot.id}" aria-label="Limpar campo"
+              style="display:${slot.value ? "block" : "none"}">×</button>
+            <div class="dropdown" id="dd-${slot.id}"></div>
+          </div>
+          <div id="product-info-${slot.id}">
+            ${slot.product ? renderChip(slot) + renderNutri(slot.product) : ""}
+          </div>`;
+        grid.appendChild(card);
+
+        // Input events
+        const input = card.querySelector(".slot-input");
+        const clearBtn = card.querySelector(".input-clear");
+        const dd = card.querySelector(".dropdown");
+
+        input.addEventListener("input", (e) => {
+          const val = e.target.value;
+          slot.value = val;
+          clearBtn.style.display = val ? "block" : "none";
+          if (val.length < 2) { dd.style.display = "none"; return; }
+          dd.style.display = "block";
+          dd.innerHTML = `<div class="dd-msg">Buscando...</div>`;
+          clearTimeout(timers[slot.id]);
+          timers[slot.id] = setTimeout(async () => {
+            if (!slot.value || slot.value.length < 2) { dd.style.display = "none"; return; }
+            try {
+              const results = await searchOFF(slot.value);
+              if (!results.length) { dd.innerHTML = `<div class="dd-msg">Nenhum resultado</div>`; return; }
+              dd.innerHTML = "";
+              results.forEach(p => {
+                const item = document.createElement("div");
+                item.className = "dd-item";
+                item.innerHTML = `
+                  ${p.image_small_url
+                    ? `<img class="dd-thumb" src="${p.image_small_url}" alt="" />`
+                    : `<div class="dd-thumb-placeholder"></div>`}
+                  <div style="min-width:0">
+                    <div class="dd-name">${escHtml((p.product_name || "Sem nome").substring(0, 40))}</div>
+                    ${p.brands ? `<div class="dd-brand">${escHtml(p.brands.substring(0, 28))}</div>` : ""}
+                  </div>`;
+                item.addEventListener("mousedown", (e) => {
+                  e.preventDefault();
+                  slot.value = p.product_name;
+                  slot.product = p;
+                  input.value = p.product_name;
+                  clearBtn.style.display = "block";
+                  dd.style.display = "none";
+                  document.getElementById(`product-info-${slot.id}`).innerHTML =
+                    renderChip(slot) + renderNutri(p);
+                  updateFooter();
+                });
+                dd.appendChild(item);
+              });
+            } catch {
+              dd.innerHTML = `<div class="dd-msg">Erro na busca</div>`;
+            }
+          }, 420);
+          updateFooter();
+        });
+
+        input.addEventListener("blur", () => setTimeout(() => dd.style.display = "none", 150));
+        input.addEventListener("focus", () => {
+          if (slot.value.length >= 2 && !slot.product) dd.style.display = "block";
+        });
+      });
+
+      // Add slot button
+      if (slots.length < MAX) {
+        const btn = document.createElement("button");
+        btn.className = "add-btn";
+        btn.innerHTML = `<span style="font-size:18px;line-height:1">+</span> Adicionar produto`;
+        btn.addEventListener("click", () => {
+          slots.push({ id: Date.now(), value: "", product: null, primary: false });
+          render();
+          setTimeout(() => {
+            const inputs = document.querySelectorAll(".slot-input");
+            inputs[inputs.length - 1].focus();
+          }, 50);
+        });
+        grid.appendChild(btn);
+      }
+
+      // Delegated events for remove / clear buttons
+      grid.addEventListener("click", (e) => {
+        const removeId = e.target.dataset.remove;
+        const clearId  = e.target.dataset.inputClear ?? e.target.dataset.clear;
+        if (removeId) {
+          slots = slots.filter(s => s.id != removeId);
+          render();
+        }
+        if (clearId) {
+          const slot = slots.find(s => s.id == clearId);
+          if (slot) {
+            slot.value = "";
+            slot.product = null;
+            render();
+          }
+        }
+      });
+
+      updateFooter();
+    }
+
+    function updateFooter() {
+      const filled = slots.filter(s => s.product).length;
+      document.getElementById("counter").textContent =
+        `${slots.length} de ${MAX} slots — ${filled} produto${filled !== 1 ? "s" : ""} selecionado${filled !== 1 ? "s" : ""}`;
+      document.getElementById("compare-btn").disabled = filled < 2;
+    }
+
+    // ── Compare button ─────────────────────────────────────
+    document.getElementById("compare-btn").addEventListener("click", () => {
+      const selected = slots.filter(s => s.product).map(s => s.product);
+      if (selected.length < 2) return;
+
+      // ✏️  AJUSTE AQUI: faça o que quiser com os produtos selecionados.
+      // Cada item tem: product_name, brands, image_small_url, nutriments
+      onCompare(selected);
+    });
+
+    // ── Callback ───────────────────────────────────────────
+    // ✏️  Substitua esta função pela sua lógica.
+    function onCompare(products) {
+      console.log("Produtos selecionados:", products);
+      alert(
+        "Comparando:\n" +
+        products.map(p => `• ${p.product_name} (${p.brands ?? "sem marca"})`).join("\n")
+      );
+    }
+
+    // ── Init ───────────────────────────────────────────────
+    render();
+  })();
+  </script>
 </body>
 </html>
