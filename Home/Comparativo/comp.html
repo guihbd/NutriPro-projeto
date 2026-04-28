@@ -80,19 +80,19 @@
     .chip-clear { background: none; border: none; cursor: pointer; color: #94a3b8; font-size: 14px; padding: 0 2px; line-height: 1; }
     .chip-clear:hover { color: #334155; }
 
-    .nutri-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; }
-    .nutri-cell { background: #f8fafc; border-radius: 8px; padding: 5px 8px; border: 1px solid var(--border); }
-    .nutri-val { font-size: 13px; font-weight: 700; color: #1e293b; }
-    .nutri-lbl { font-size: 10px; color: var(--muted); }
+    .nutri-all { margin-top: 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .nutri-title { background: #f8fafc; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .03em; padding: 7px 8px; }
+    .nutri-list { max-height: 280px; overflow-y: auto; }
+    .nutri-row { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; font-size: 12px; border-top: 1px solid #eef2f7; }
+    .nutri-row:first-child { border-top: none; }
+    .nutri-key { color: #334155; text-transform: capitalize; }
+    .nutri-value { color: #0f172a; font-weight: 700; text-align: right; }
 
     .add-btn { display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 14px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600; min-height: 80px; width: 100%; transition: background .15s, border-color .15s, color .15s; }
     .add-btn:hover { background: #f8fafc; border-color: var(--primary); color: #0f172a; }
 
-    .cmp-footer { margin-top: 1rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .cmp-footer { margin-top: 1rem; }
     .counter { font-size: 12px; color: var(--muted); }
-    .compare-btn { font-size: 13px; font-weight: 600; padding: 8px 18px; border-radius: 8px; border: 1px solid #cbd5e1; background: var(--surface); color: #1e293b; cursor: pointer; transition: background .15s; }
-    .compare-btn:hover { background: #f8fafc; }
-    .compare-btn:disabled { opacity: .4; cursor: not-allowed; }
 
     @keyframes fadeIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
 </style>
@@ -100,22 +100,16 @@
 <body>
     <header>
         <h1>NutriPro</h1>
-        
     </header>
 
     <main class="comparador-container">
-        <div id="comparador">
-    <p class="cmp-header">Comparar produtos</p>
-    <div class="slots-grid" id="slots-grid"></div>
-    <div class="cmp-footer">
-      <span class="counter" id="counter"></span>
-      <button class="compare-btn" id="compare-btn" disabled>Comparar nutrição →</button>
-    </div>
-  </div>
-
-
-
-        <datalist id="lista-alimentos"></datalist>
+      <div id="comparador">
+        <p class="cmp-header">Comparar produtos</p>
+        <div class="slots-grid" id="slots-grid"></div>
+        <div class="cmp-footer">
+          <span class="counter" id="counter"></span>
+        </div>
+      </div>
     </main>
 
     <script>
@@ -123,44 +117,90 @@
     const MAX = 4;
     const OFF_URL = "https://pt.openfoodfacts.org/cgi/search.pl";
     let slots = [{ id: 1, value: "", product: null, primary: true }];
-    let timers = {};
+    const timers = {};
 
-    // ── API ────────────────────────────────────────────────
+    function normalizeText(text) {
+      return (text ?? "")
+        .toString()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
     async function searchOFF(query) {
-      
-    const params = new URLSearchParams({
-    search_terms: query,
-    search_simple: '1',
-    action: 'process',
-    json: '1',
-    page_size: '6',
-    lc: 'pt',
-    fields: 'id,product_name,brands,image_small_url,nutriments',
-  });
+      const normalizedQuery = normalizeText(query);
+      const params = new URLSearchParams({
+        search_terms: normalizedQuery,
+        search_simple: "1",
+        action: "process",
+        json: "1",
+        page_size: "24",
+        lc: "pt",
+        fields: "id,product_name,brands,image_small_url,nutriments",
+      });
 
-  const res = await fetch(`${OFF_URL}?${params}`, {
-    headers: {
-      'User-Agent': 'NutriPro/1.0 (guilahenrique2004@gmail.com)',
-    },
-  });
+      const res = await fetch(`${OFF_URL}?${params}`);
+      const data = await res.json();
+      const products = data.products ?? [];
 
-  const data = await res.json();
-  return data.products ?? [];
-}
-      
+      const ranked = products
+        .map((product) => {
+          const name = normalizeText(product.product_name);
+          const brand = normalizeText(product.brands);
+          const nameStarts = name.startsWith(normalizedQuery);
+          const nameContains = name.includes(normalizedQuery);
+          const brandContains = brand.includes(normalizedQuery);
+          const score = nameStarts ? 3 : nameContains ? 2 : brandContains ? 1 : 0;
+          return { product, score };
+        })
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map((entry) => entry.product);
 
-    function getNutri(p) {
-  const n = p.nutriments ?? {};
-  const fmt = (v, u = "g") => v != null ? `${Math.round(v)}${u}` : "—";
-  return {
-    kcal:    fmt(n["energy-kcal_100g"] ?? n["energy-kcal"] ?? n["energy_100g"] != null ? Math.round((n["energy_100g"] ?? 0) / 4.184) : null, "kcal"),
-    sugar:   fmt(n["sugars_100g"] ?? n["sugars"]),
-    fat:     fmt(n["fat_100g"] ?? n["fat"]),
-    protein: fmt(n["proteins_100g"] ?? n["proteins"]),
-  };
-}
+      return ranked.length ? ranked.slice(0, 8) : products.slice(0, 8);
+    }
 
-    // ── Render helpers ─────────────────────────────────────
+    function formatNutriLabel(key) {
+      return key
+        .replace(/_100g$/i, " (100g)")
+        .replace(/_serving$/i, " (porção)")
+        .replace(/_/g, " ")
+        .replace(/-/g, " ")
+        .trim();
+    }
+
+    function extractNutriments(product) {
+      const nutriments = product.nutriments ?? {};
+      const items = [];
+
+      Object.entries(nutriments).forEach(([rawKey, rawValue]) => {
+        if (rawValue == null || rawValue === "") return;
+        if (/_unit$/i.test(rawKey)) return;
+
+        const type = typeof rawValue;
+        if (type !== "number" && type !== "string") return;
+
+        const key = rawKey.trim();
+        const value = type === "number" ? Number(rawValue.toFixed(2)) : rawValue;
+
+        const baseKey = key
+          .replace(/_100g$/i, "")
+          .replace(/_serving$/i, "")
+          .replace(/_value$/i, "");
+
+        const unit = nutriments[`${baseKey}_unit`];
+        const valueWithUnit = unit && !String(value).includes(unit) ? `${value} ${unit}` : `${value}`;
+
+        items.push({
+          label: formatNutriLabel(key),
+          value: valueWithUnit,
+        });
+      });
+
+      return items.sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
+    }
+
     function renderChip(slot) {
       const p = slot.product;
       const img = p.image_small_url
@@ -168,26 +208,35 @@
         : "";
       return `<div class="selected-chip">
         ${img}
-        <span class="chip-name">${escHtml(p.product_name.substring(0, 32))}</span>
+        <span class="chip-name">${escHtml((p.product_name || "Sem nome").substring(0, 32))}</span>
         <button class="chip-clear" data-clear="${slot.id}" aria-label="Limpar">×</button>
       </div>`;
     }
 
-    function renderNutri(p) {
-      const n = getNutri(p);
-      return `<div class="nutri-mini">
-        <div class="nutri-cell"><div class="nutri-val">${n.kcal}</div><div class="nutri-lbl">Energia /100g</div></div>
-        <div class="nutri-cell"><div class="nutri-val">${n.sugar}</div><div class="nutri-lbl">Açúcares</div></div>
-        <div class="nutri-cell"><div class="nutri-val">${n.fat}</div><div class="nutri-lbl">Gorduras</div></div>
-        <div class="nutri-cell"><div class="nutri-val">${n.protein}</div><div class="nutri-lbl">Proteínas</div></div>
+    function renderNutri(product) {
+      const nutriments = extractNutriments(product);
+      if (!nutriments.length) {
+        return `<div class="nutri-all"><div class="nutri-title">Informações nutricionais</div><div class="nutri-row"><span class="nutri-key">Sem dados disponíveis</span></div></div>`;
+      }
+
+      const rows = nutriments
+        .map((item) => `<div class="nutri-row"><span class="nutri-key">${escHtml(item.label)}</span><span class="nutri-value">${escHtml(item.value)}</span></div>`)
+        .join("");
+
+      return `<div class="nutri-all">
+        <div class="nutri-title">Informações nutricionais (${nutriments.length})</div>
+        <div class="nutri-list">${rows}</div>
       </div>`;
     }
 
     function escHtml(str) {
-      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
     }
 
-    // ── Main render ────────────────────────────────────────
     function render() {
       const grid = document.getElementById("slots-grid");
       grid.innerHTML = "";
@@ -212,7 +261,6 @@
           </div>`;
         grid.appendChild(card);
 
-        // Input events
         const input = card.querySelector(".slot-input");
         const clearBtn = card.querySelector(".input-clear");
         const dd = card.querySelector(".dropdown");
@@ -231,7 +279,7 @@
               const results = await searchOFF(slot.value);
               if (!results.length) { dd.innerHTML = `<div class="dd-msg">Nenhum resultado</div>`; return; }
               dd.innerHTML = "";
-              results.forEach(p => {
+              results.forEach((p) => {
                 const item = document.createElement("div");
                 item.className = "dd-item";
                 item.innerHTML = `
@@ -242,11 +290,12 @@
                     <div class="dd-name">${escHtml((p.product_name || "Sem nome").substring(0, 40))}</div>
                     ${p.brands ? `<div class="dd-brand">${escHtml(p.brands.substring(0, 28))}</div>` : ""}
                   </div>`;
-                item.addEventListener("mousedown", (e) => {
-                  e.preventDefault();
-                  slot.value = p.product_name;
+                item.addEventListener("mousedown", (event) => {
+                  event.preventDefault();
+                  const selectedName = p.product_name || "";
+                  slot.value = selectedName;
                   slot.product = p;
-                  input.value = p.product_name;
+                  input.value = selectedName;
                   clearBtn.style.display = "block";
                   dd.style.display = "none";
                   document.getElementById(`product-info-${slot.id}`).innerHTML =
@@ -262,13 +311,12 @@
           updateFooter();
         });
 
-        input.addEventListener("blur", () => setTimeout(() => dd.style.display = "none", 150));
+        input.addEventListener("blur", () => setTimeout(() => { dd.style.display = "none"; }, 150));
         input.addEventListener("focus", () => {
           if (slot.value.length >= 2 && !slot.product) dd.style.display = "block";
         });
       });
 
-      // Add slot button
       if (slots.length < MAX) {
         const btn = document.createElement("button");
         btn.className = "add-btn";
@@ -284,16 +332,15 @@
         grid.appendChild(btn);
       }
 
-      // Delegated events for remove / clear buttons
       grid.addEventListener("click", (e) => {
         const removeId = e.target.dataset.remove;
-        const clearId  = e.target.dataset.inputClear ?? e.target.dataset.clear;
+        const clearId = e.target.dataset.inputClear ?? e.target.dataset.clear;
         if (removeId) {
-          slots = slots.filter(s => s.id != removeId);
+          slots = slots.filter((s) => s.id != removeId);
           render();
         }
         if (clearId) {
-          const slot = slots.find(s => s.id == clearId);
+          const slot = slots.find((s) => s.id == clearId);
           if (slot) {
             slot.value = "";
             slot.product = null;
@@ -306,33 +353,11 @@
     }
 
     function updateFooter() {
-      const filled = slots.filter(s => s.product).length;
+      const filled = slots.filter((s) => s.product).length;
       document.getElementById("counter").textContent =
         `${slots.length} de ${MAX} slots — ${filled} produto${filled !== 1 ? "s" : ""} selecionado${filled !== 1 ? "s" : ""}`;
-      document.getElementById("compare-btn").disabled = filled < 2;
     }
 
-    // ── Compare button ─────────────────────────────────────
-    document.getElementById("compare-btn").addEventListener("click", () => {
-      const selected = slots.filter(s => s.product).map(s => s.product);
-      if (selected.length < 2) return;
-
-      // ✏️  AJUSTE AQUI: faça o que quiser com os produtos selecionados.
-      // Cada item tem: product_name, brands, image_small_url, nutriments
-      onCompare(selected);
-    });
-
-    // ── Callback ───────────────────────────────────────────
-    // ✏️  Substitua esta função pela sua lógica.
-    function onCompare(products) {
-      console.log("Produtos selecionados:", products);
-      alert(
-        "Comparando:\n" +
-        products.map(p => `• ${p.product_name} (${p.brands ?? "sem marca"})`).join("\n")
-      );
-    }
-
-    // ── Init ───────────────────────────────────────────────
     render();
   })();
   </script>
