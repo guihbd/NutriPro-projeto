@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -161,13 +161,58 @@
       return ranked.length ? ranked.slice(0, 8) : products.slice(0, 8);
     }
 
+    const NUTRI_LABELS_PT = {
+      energy: "Energia",
+      "energy-kcal": "Energia (kcal)",
+      "energy-kj": "Energia (kJ)",
+      fat: "Gorduras totais",
+      "saturated-fat": "Gorduras saturadas",
+      "monounsaturated-fat": "Gorduras monoinsaturadas",
+      "polyunsaturated-fat": "Gorduras poli-insaturadas",
+      trans: "Gorduras trans",
+      carbohydrates: "Carboidratos",
+      sugars: "Açúcares",
+      sucrose: "Sacarose",
+      glucose: "Glicose",
+      fructose: "Frutose",
+      lactose: "Lactose",
+      maltose: "Maltose",
+      starch: "Amido",
+      fiber: "Fibras",
+      proteins: "Proteínas",
+      salt: "Sal",
+      sodium: "Sódio",
+      cholesterol: "Colesterol",
+      calcium: "Cálcio",
+      iron: "Ferro",
+      vitamin_a: "Vitamina A",
+      vitamin_c: "Vitamina C",
+      vitamin_d: "Vitamina D",
+      vitamin_e: "Vitamina E",
+      "nova-group": "Grupo NOVA",
+      "nutrition-score-fr": "Pontuação nutricional (FR)",
+    };
+
     function formatNutriLabel(key) {
-      return key
-        .replace(/_100g$/i, " (100g)")
-        .replace(/_serving$/i, " (porção)")
+      const suffix = key.endsWith("_100g")
+        ? " (100g)"
+        : key.endsWith("_serving")
+          ? " (porção)"
+          : "";
+
+      const baseKey = key
+        .replace(/_100g$/i, "")
+        .replace(/_serving$/i, "")
+        .replace(/_value$/i, "")
+        .toLowerCase();
+
+      const translated = NUTRI_LABELS_PT[baseKey];
+      if (translated) return `${translated}${suffix}`;
+
+      return `${baseKey
         .replace(/_/g, " ")
         .replace(/-/g, " ")
-        .trim();
+        .trim()}${suffix}`;
     }
 
     function extractNutriments(product) {
